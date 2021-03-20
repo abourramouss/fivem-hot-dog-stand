@@ -10,6 +10,7 @@ var DefaultPlugins = require('../plugins/DefaultPlugins');
 var Events = require('./events');
 var GetPhysicsPlugins = require('./GetPhysicsPlugins');
 var GetScenePlugins = require('./GetScenePlugins');
+var GLOBAL_CONST = require('../const');
 var NOOP = require('../utils/NOOP');
 var Settings = require('./Settings');
 
@@ -390,6 +391,7 @@ var Systems = new Class({
      * Instructs the Scene to render itself via its Camera Manager to the renderer given.
      *
      * @method Phaser.Scenes.Systems#render
+     * @fires Phaser.Scenes.Events#PRE_RENDER
      * @fires Phaser.Scenes.Events#RENDER
      * @since 3.0.0
      *
@@ -400,6 +402,8 @@ var Systems = new Class({
         var displayList = this.displayList;
 
         displayList.depthSort();
+
+        this.events.emit(Events.PRE_RENDER, renderer);
 
         this.cameras.render(renderer, displayList);
 
@@ -757,6 +761,11 @@ var Systems = new Class({
 
         settings.active = false;
         settings.visible = false;
+
+        if (this.renderer === GLOBAL_CONST.WEBGL)
+        {
+            this.renderer.resetTextures(true);
+        }
 
         events.emit(Events.SHUTDOWN, this, data);
     },

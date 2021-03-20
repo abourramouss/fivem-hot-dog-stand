@@ -1,10 +1,10 @@
 import Phaser, { Game, GameObjects } from 'phaser';
-import deskImg from './assets/Screenshot_3.jpg';
-import bun from './assets/bread1.png'
-import sausage from './assets/sausage1.png'
-import ketchup from './assets/ketchup-bottle.png'
-import ketchupFill from './assets/ketchup-bottle-fill.png'
-import Point from './points'
+import deskImg from "./assets/Screenshot_3.jpg";
+import bun from "./assets/bread1.png";
+import sausage from "./assets/sausage1.png";
+import ketchup from "./assets/ketchup-bottle.png";
+import ketchupFill from "./assets/ketchup-bottle-fill.png";
+import Point from "./points";
 
 class MyGame extends Phaser.Scene
 {
@@ -17,12 +17,12 @@ class MyGame extends Phaser.Scene
 
     preload ()
     {
-        this.load.image('desk', deskImg);
-        this.load.image('ketchup', ketchup);
-        this.load.image('ketchupFill', ketchupFill);
-        this.load.image('bun', bun);
-        this.load.image('sausage', sausage);
 
+        this.load.image("desk", deskImg);
+        this.load.image("ketchup", ketchup);
+        this.load.image("ketchupFill", ketchupFill);
+        this.load.image("bun", bun);
+        this.load.image("sausage", sausage);
         //this.load.image('bunSal', 'assets/bread2.png');
         //this.load.image('bunSalKet', 'assets/bread3.png');
         //this.load.image('bunKet', 'assets/bread4.png');
@@ -31,14 +31,17 @@ class MyGame extends Phaser.Scene
     create ()
     {
 
-        const y = 160
+        const y = 160;
         let panCounter = 0;
         let sausageCounter = 0;
-        let posPan = [new Point(210,y),new Point(260,y),new Point(310,y)]
-        let posSausage = [new Point(460,y),new Point(510,y),new Point(560,y)]
-        let spriteBum = []
-        let spriteSaus = []
-        let insideZone = []
+        let posPan = [new Point(210,y),new Point(260,y),new Point(310,y)];
+        let posSausage = [new Point(460,y),new Point(510,y),new Point(560,y)];
+        let listenCreated = new Phaser.Events.EventEmitter();
+        let sausages = [];
+        this.myGroup = this.add.group();
+        let insideZone = [];
+
+        
 
         function changeTexture() {
             this.setTexture('ketchupFill');
@@ -47,31 +50,31 @@ class MyGame extends Phaser.Scene
         function unchange(){
             this.setTexture('ketchup');
         }
-
-        
-        
        
         function createEntity(context,type,x,y){
-            var entity = context.add.sprite(x, y, type);
+            let entity = context.add.sprite(x, y, type);
             entity.setInteractive(new Phaser.Geom.Rectangle(0, 0, 80, 100), Phaser.Geom.Rectangle.Contains);
             context.input.setDraggable(entity);
             entity.inputEnabled = true;
-            return entity
+            return entity;
+            
         }
 
         function collider(context,type,x,x1,y,y1,positions, counter){
-            context.button.on('pointerdown',function(){
-                //Pan
+            let createdEntity;
+            createdEntity = context.button.on('pointerdown',function(){
+                let ent;
                 if(counter < 3){
                     if(game.input.mousePointer.x > x && game.input.mousePointer.x < x1){
                         if(game.input.mousePointer.y > y && game.input.mousePointer.y < y1){
-                            var createdEntity = createEntity(this, type ,positions[counter].getX, positions[counter].getY);
+                            ent = createEntity(this, type ,positions[counter].getX, positions[counter].getY);
                             counter = counter+1;
                         }
                     }
                 }
-                return createdEntity;
+                return ent;
             },context)
+            return createdEntity;
         }
 
        
@@ -87,7 +90,9 @@ class MyGame extends Phaser.Scene
         //GAME ELEMENTS:
         //cooking plate
         var zone = this.add.zone(510,170, 250, 110).setRectangleDropZone(250, 110);
+        
 
+        
         //  Just a visual display of the drop zone
         var graphics = this.add.graphics();
         graphics.lineStyle(2, 0xffff00);
@@ -96,22 +101,20 @@ class MyGame extends Phaser.Scene
         //pan
         collider(this,'bun', 150,340,220,270,posPan,panCounter);
         //Salchicha
-        collider(this,'sausage', 400,600,220,270,posSausage,sausageCounter);
-
-        
+        sausages.push(collider(this,'sausage', 400,600,220,270,posSausage,sausageCounter));
         //ketchup-bottle
         let ket = createEntity(this,'ketchup',40,60);
         ket.on('pointerdown',changeTexture).on('pointerup',unchange);
 
-      
+
 
         this.input.on('drag', function (pointer, gameObject, dragX, dragY) {
-        gameObject.x = dragX;
-        gameObject.y = dragY;
+            gameObject.x = dragX;
+            gameObject.y = dragY;
         });
         
-    
-        this.input.on('dragover', function (pointer, gameObject, dropZone) {
+
+        this.input.on('dragenter', function (pointer, gameObject, dropZone) {
             if(!insideZone.includes(gameObject) ){
                 insideZone.push(gameObject);
                 console.log("count: " + insideZone.length);
@@ -123,13 +126,10 @@ class MyGame extends Phaser.Scene
     
         this.input.on('dragleave', function (pointer, gameObject, dropZone) {
             
-            let i = insideZone.find(gameObject);
-            console.log(i);
+            let i = insideZone.indexOf(gameObject);
+            insideZone.splice(i,1);
             
-            if(insideZone.length != 0){
-                console.log("count: " + insideZone.length);
-            }
-            else{
+            if(insideZone.length == 0){
                 console.log("count: " + insideZone.length);
                 graphics.clear();
                 graphics.lineStyle(2, 0xffff00);
@@ -152,11 +152,11 @@ class MyGame extends Phaser.Scene
 
 
 const config = {
-    type: Phaser.AUTO,
+    type: Phaser.CANVAS,
     parent: 'phaser-example',
     width: 600,
     height: 300,
-    scene: MyGame
+    scene: MyGame,
 };
 
 const game = new Phaser.Game(config);
