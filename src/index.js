@@ -57,7 +57,6 @@ class MyGame extends Phaser.Scene
             context.input.setDraggable(entity);
             entity.inputEnabled = true;
             return entity;
-            
         }
 
         function collider(context,type,x,x1,y,y1,positions, counter){
@@ -157,6 +156,7 @@ const config = {
     width: 600,
     height: 300,
     scene: MyGame,
+    transparent: 'true'
 };
 
 const game = new Phaser.Game(config);
